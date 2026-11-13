@@ -6,8 +6,14 @@ cd "$(dirname "$0")"
 
 VERSION="${VERSION:-0.1}"
 if [[ "${UNIVERSAL:-}" == "1" ]]; then
-  swift build -c release --product Claudit --arch arm64 --arch x86_64
-  BIN=".build/apple/Products/Release/Claudit"
+  # Build each architecture separately and join them with lipo: SwiftPM's combined --arch build is
+  # unreliable on some Xcode versions.
+  for arch in arm64 x86_64; do
+    swift build -c release --product Claudit --triple "$arch-apple-macosx"
+  done
+  mkdir -p .build/universal
+  BIN=".build/universal/Claudit"
+  lipo -create -output "$BIN" .build/arm64-apple-macosx/release/Claudit .build/x86_64-apple-macosx/release/Claudit
 else
   swift build -c release --product Claudit
   BIN=".build/release/Claudit"
