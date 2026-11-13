@@ -26,7 +26,7 @@ Claudit **estimates** cost: it multiplies the token counts in your transcripts b
 
 ## Requirements
 
-- macOS 14 or later.
+- macOS 14 or later on an Apple Silicon Mac (the released builds are arm64 only).
 - Claude Code, with transcripts under `~/.claude/projects`.
 - To build from source: a Swift 6 toolchain (Xcode 16 or later).
 
@@ -41,7 +41,6 @@ Optional settings for `build_app.sh`:
 
 | Variable | Effect |
 | --- | --- |
-| `UNIVERSAL=1` | Build for both Apple Silicon and Intel |
 | `VERSION=1.2.3` | Set the app version (default `0.1`) |
 
 Run the tests with `swift test`. You can also open `Package.swift` in Xcode.

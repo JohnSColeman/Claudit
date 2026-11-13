@@ -1,23 +1,12 @@
 #!/bin/zsh
 # Builds Claudit.app (menu bar only, ad-hoc signed) into ./build
-# Optional environment: UNIVERSAL=1 builds arm64 + x86_64; VERSION sets the app's version (default 0.1).
+# Optional environment: VERSION sets the app's version (default 0.1). Builds for the machine's own architecture.
 set -euo pipefail
 cd "$(dirname "$0")"
 
 VERSION="${VERSION:-0.1}"
-if [[ "${UNIVERSAL:-}" == "1" ]]; then
-  # Build each architecture separately and join them with lipo: SwiftPM's combined --arch build is
-  # unreliable on some Xcode versions.
-  for arch in arm64 x86_64; do
-    swift build -c release --product Claudit --triple "$arch-apple-macosx"
-  done
-  mkdir -p .build/universal
-  BIN=".build/universal/Claudit"
-  lipo -create -output "$BIN" .build/arm64-apple-macosx/release/Claudit .build/x86_64-apple-macosx/release/Claudit
-else
-  swift build -c release --product Claudit
-  BIN=".build/release/Claudit"
-fi
+swift build -c release --product Claudit
+BIN=".build/release/Claudit"
 APP="build/Claudit.app"
 
 rm -rf "$APP"

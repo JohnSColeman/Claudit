@@ -1,7 +1,7 @@
 name: Release
 
 # Builds, signs (Developer ID + hardened runtime), notarizes, staples, and
-# publishes a universal (arm64 + x86_64) macOS build of Claudit as a GitHub Release.
+# publishes an Apple Silicon (arm64) macOS build of Claudit as a GitHub Release.
 #
 # Trigger: push a version tag (e.g. `git tag v0.1.0 && git push origin v0.1.0`),
 # or run manually from the Actions tab (the signed build is uploaded as an artifact).
@@ -56,11 +56,11 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEY_PW" "$KEYCHAIN"
           rm -f "$RUNNER_TEMP/cert.p12"
 
-      - name: Build (Release, universal)
+      - name: Build (Release, Apple Silicon)
         run: |
           # v1.2.3 -> 1.2.3; manual runs keep the script's default version.
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then export VERSION="${GITHUB_REF_NAME#v}"; fi
-          UNIVERSAL=1 ./build_app.sh
+          ./build_app.sh
           lipo -archs "$APP/Contents/MacOS/Claudit"
 
       - name: Sign (Developer ID + hardened runtime)
@@ -82,7 +82,7 @@ jobs:
 
       - name: Package
         run: |
-          NAME="Claudit-${GITHUB_REF_NAME:-manual}-universal.zip"
+          NAME="Claudit-${GITHUB_REF_NAME:-manual}-arm64.zip"
           ditto -c -k --keepParent "$APP" "$NAME"
           echo "ZIP=$NAME" >> "$GITHUB_ENV"
 
@@ -93,11 +93,11 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" "$ZIP" \
             --title "Claudit $GITHUB_REF_NAME" \
-            --notes $'Notarized universal macOS build (Apple Silicon + Intel).\n\nDownload, unzip, and move Claudit.app to /Applications. It lives in the menu bar.'
+            --notes $'Notarized macOS build for Apple Silicon.\n\nDownload, unzip, and move Claudit.app to /Applications. It lives in the menu bar.'
 
       - name: Upload artifact (manual runs)
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
-          name: Claudit-universal
+          name: Claudit-arm64
           path: ${{ env.ZIP }}
