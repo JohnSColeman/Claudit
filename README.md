@@ -62,3 +62,7 @@ If the price file can't be read, Claudit falls back to the built-in defaults wit
 | `Sources/Claudit` | The menu bar app (AppKit shell, SwiftUI views) |
 | `Sources/ClauditReport` | The `claudit-report` command-line tool |
 | `Tests/ClauditCoreTests` | Unit tests for the core |
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
