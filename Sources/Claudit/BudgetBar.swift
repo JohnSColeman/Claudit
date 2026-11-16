@@ -36,7 +36,7 @@ struct BudgetBar: View {
                         }
                 }
                 .font(.caption)
-                .help("Monthly allowance in whole dollars. 0 turns the budget bar off.")
+                .help("Monthly target")
             }
             .frame(height: 22)
             if b.status != .off {
