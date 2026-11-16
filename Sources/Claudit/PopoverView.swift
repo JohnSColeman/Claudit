@@ -73,6 +73,7 @@ struct UsagePopover: View {
             } else {
                 projectsTab
             }
+            BudgetBar(store: store)
             footer
         }
         .padding(14)
