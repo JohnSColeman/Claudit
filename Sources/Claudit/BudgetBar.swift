@@ -22,10 +22,17 @@ struct BudgetBar: View {
                 HStack(spacing: 2) {
                     Text("$").foregroundStyle(.secondary)
                     TextField("0", text: $text)
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(.plain)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 56)
                         .focused($focused)
+                        .focusEffectDisabled()      // drop the system focus ring; the underline is the highlight
+                        .padding(.bottom, 2)
+                        .overlay(alignment: .bottom) {
+                            Rectangle()
+                                .fill(focused ? Color.accentColor : Color.primary.opacity(0.25))
+                                .frame(height: 1)
+                        }
                         .onSubmit(commit)
                         .onChange(of: text) { _, new in
                             // Save as they type, so closing the popover mid-edit can't lose the value.
