@@ -51,6 +51,10 @@ final class UsageStore: ObservableObject {
     @Published private(set) var todayCosts: [String: CostBreakdown] = [:]
     @Published private(set) var weekCosts: [String: CostBreakdown] = [:]
     @Published private(set) var monthCosts: [String: CostBreakdown] = [:]
+    /// Monthly spend target in whole dollars. Zero means no target, and the budget bar is greyed out.
+    @Published var monthlyAllowance: Int = 0 {
+        didSet { if persist { UserDefaults.standard.set(monthlyAllowance, forKey: Self.allowanceKey) } }
+    }
 
     private let queue = DispatchQueue(label: "claudit.scan", qos: .utility)
     private let transcripts = TranscriptStore()
@@ -62,6 +66,7 @@ final class UsageStore: ObservableObject {
     private var unpriced: Set<String> = []
     private let persist: Bool
     private static let defaultsKey = "excludedProjects"
+    private static let allowanceKey = "monthlyAllowance"
 
     init() {
         let env = ProcessInfo.processInfo.environment
@@ -69,10 +74,12 @@ final class UsageStore: ObservableObject {
         priceTable = PriceTable.load()
         if persist {
             excluded = Set(UserDefaults.standard.stringArray(forKey: Self.defaultsKey) ?? [])
+            monthlyAllowance = max(0, UserDefaults.standard.integer(forKey: Self.allowanceKey))
         } else {
             excluded = Set((env["CLAUDIT_EXCLUDE"] ?? "").split(separator: ",").map(String.init))
             if env["CLAUDIT_TAB"] == "projects" { tab = .projects }
             if let raw = env["CLAUDIT_PERIOD"], let p = Period(rawValue: raw) { period = p }
+            monthlyAllowance = Int(env["CLAUDIT_ALLOWANCE"] ?? "") ?? 0
         }
     }
 

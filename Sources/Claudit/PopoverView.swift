@@ -54,6 +54,7 @@ struct UsagePopover: View {
     @ObservedObject var store: UsageStore
     var onHover: (Bool) -> Void
     var onEditPrices: () -> Void = {}
+    var onBeginEditing: () -> Void = {}
     /// Snapshot rendering can't draw ScrollView or segmented Pickers, so dev snapshots use plain stand-ins.
     var flat = false
 
@@ -73,6 +74,7 @@ struct UsagePopover: View {
             } else {
                 projectsTab
             }
+            BudgetBar(store: store, onBeginEditing: onBeginEditing)
             footer
         }
         .padding(14)
