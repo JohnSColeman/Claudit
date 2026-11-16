@@ -136,7 +136,8 @@ final class StatusController: NSObject, NSPopoverDelegate {
         popover.delegate = self
         let view = UsagePopover(store: store,
                                 onHover: { [weak self] hovering in self?.popoverHover(hovering) },
-                                onEditPrices: { [weak self] in self?.openPriceEditor() })
+                                onEditPrices: { [weak self] in self?.openPriceEditor() },
+                                onBeginEditing: { [weak self] in self?.beginTextEntry() })
         popover.contentViewController = NSHostingController(rootView: view)
         // Without this the popover anchors at the 320x320 default, then grows upward off the top of the screen.
         popover.contentSize = NSSize(width: 410, height: 580)
@@ -146,6 +147,16 @@ final class StatusController: NSObject, NSPopoverDelegate {
         guard let button = item.button, !popover.isShown else { return }
         store.refresh()
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+    }
+
+    /// The allowance field needs keyboard focus: pin the popover so hover-out doesn't close it mid-edit,
+    /// and activate the (menu bar only) app so the popover window can become key.
+    private func beginTextEntry() {
+        pinned = true
+        hideWork?.cancel()
+        popover.behavior = .transient
+        NSApp.activate(ignoringOtherApps: true)
+        popover.contentViewController?.view.window?.makeKey()
     }
 
     private func popoverHover(_ hovering: Bool) {

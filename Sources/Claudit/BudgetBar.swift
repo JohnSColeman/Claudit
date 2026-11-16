@@ -5,6 +5,8 @@ import ClauditCore
 /// and a marker for the share of the allowance used (red when ahead of the day, green otherwise).
 struct BudgetBar: View {
     @ObservedObject var store: UsageStore
+    /// Called when the field gains focus, so the host can keep the popover open and give it the keyboard.
+    var onBeginEditing: () -> Void = {}
     @State private var text = ""
     @FocusState private var focused: Bool
 
@@ -25,21 +27,25 @@ struct BudgetBar: View {
                         .frame(width: 56)
                         .focused($focused)
                         .onSubmit(commit)
-                        .onChange(of: focused) { _, now in if !now { commit() } }
+                        .onChange(of: text) { _, new in
+                            // Save as they type, so closing the popover mid-edit can't lose the value.
+                            if let v = Budget.parse(new), v != store.monthlyAllowance { store.monthlyAllowance = v }
+                        }
+                        .onChange(of: focused) { _, now in
+                            if now { onBeginEditing() } else { commit() }
+                        }
                 }
                 .font(.caption)
                 .help("Monthly allowance in whole dollars. 0 turns the budget bar off.")
             }
             .frame(height: 22)
             if b.status != .off {
-                Text("\(Money.format(spend)) of $\(store.monthlyAllowance) · day \(dayNumber(b)) of \(b.daysInMonth)")
+                Text("\(Money.format(spend)) of $\(store.monthlyAllowance) · day \(b.dayNumber) of \(b.daysInMonth)")
                     .font(.caption2).foregroundStyle(.secondary)
             }
         }
         .onAppear { text = String(store.monthlyAllowance) }
     }
-
-    private func dayNumber(_ b: Budget) -> Int { min(Int(b.dayFraction * Double(b.daysInMonth)) + 1, b.daysInMonth) }
 
     private func commit() {
         if let v = Budget.parse(text) { store.monthlyAllowance = v }
@@ -60,7 +66,7 @@ struct BudgetBar: View {
                 }
                 marker(.primary, height: h)
                     .offset(x: w * b.dayFraction - 1)
-                    .help("Today: day \(dayNumber(b)) of \(b.daysInMonth)")
+                    .help("Today: day \(b.dayNumber) of \(b.daysInMonth)")
                 if b.status != .off {
                     marker(b.status == .over ? .red : .green, height: h)
                         .offset(x: w * b.spendFraction - 1)

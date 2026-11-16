@@ -64,4 +64,14 @@ final class BudgetTests: XCTestCase {
         XCTAssertEqual(Budget.parse(" 20 "), 20)
         for bad in ["", "-5", "1.5", "abc", "+3"] { XCTAssertNil(Budget.parse(bad), bad) }
     }
+
+    /// Clocks go back on 1 Nov 2026 in New York, so the month is 721 hours long. 23:30 on the 1st is still day 1.
+    func testDayFractionAcrossClockChange() {
+        var ny = Calendar(identifier: .gregorian)
+        ny.timeZone = TimeZone(identifier: "America/New_York")!
+        let now = ny.date(from: DateComponents(year: 2026, month: 11, day: 1, hour: 23, minute: 30))!
+        let b = Budget(spend: 0, allowance: 100, now: now, calendar: ny)
+        XCTAssertLessThan(b.dayFraction, 1.0 / 30)
+        XCTAssertEqual(b.dayNumber, 1)
+    }
 }

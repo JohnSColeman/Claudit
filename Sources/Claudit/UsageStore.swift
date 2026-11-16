@@ -74,7 +74,7 @@ final class UsageStore: ObservableObject {
         priceTable = PriceTable.load()
         if persist {
             excluded = Set(UserDefaults.standard.stringArray(forKey: Self.defaultsKey) ?? [])
-            monthlyAllowance = UserDefaults.standard.integer(forKey: Self.allowanceKey)
+            monthlyAllowance = max(0, UserDefaults.standard.integer(forKey: Self.allowanceKey))
         } else {
             excluded = Set((env["CLAUDIT_EXCLUDE"] ?? "").split(separator: ",").map(String.init))
             if env["CLAUDIT_TAB"] == "projects" { tab = .projects }
