@@ -15,7 +15,7 @@ A macOS menu bar app that shows what your [Claude Code](https://claude.com/claud
 - **Monthly budget.** A bar above the footer, with a tick for each day of the month, tracks this month's spend against a limit you type in (whole dollars) on the right. The plain marker is today's position in the month and the coloured marker is the share of the limit used so far: green while you are at or behind the day marker, red once you are ahead of it. The limit is remembered, follows the project filter, and is greyed out while it is 0.
 - **Editable prices.** Right-click the menu bar item and choose *Edit prices…*. Per model you can set input, output, cache read and 5-minute / 1-hour cache write rates, and a second set of rates for prompts over a token threshold (for models such as Haiku 5.5 that charge more for large prompts).
 - **Update from Anthropic.** The price editor can read Anthropic's [pricing page](https://platform.claude.com/docs/en/about-claude/pricing), show what differs from your table, and apply only the changes you tick.
-- **Command-line report.** `claudit-report --days 7 --top 20` prints the same breakdown in a terminal.
+- **Command-line report (from source).** A developer tool that is not part of the released app. From a checkout, `swift run claudit-report --days 7 --top 20` prints the cost breakdown for the last 7 days and the 20 most expensive prompts in a terminal. `--days` defaults to 1 and `--top` to 12.
 
 ## Read this before trusting the numbers
 
@@ -62,7 +62,7 @@ If the price file can't be read, Claudit falls back to the built-in defaults wit
 | --- | --- |
 | `Sources/ClauditCore` | Transcript parsing, pricing and aggregation, with no UI |
 | `Sources/Claudit` | The menu bar app (AppKit shell, SwiftUI views) |
-| `Sources/ClauditReport` | The `claudit-report` command-line tool |
+| `Sources/ClauditReport` | The `claudit-report` command-line tool (run from source with `swift run`) |
 | `Tests/ClauditCoreTests` | Unit tests for the core |
 
 ## License
