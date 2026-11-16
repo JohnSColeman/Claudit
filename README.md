@@ -12,6 +12,7 @@ A macOS menu bar app that shows what your [Claude Code](https://claude.com/claud
   - cost by activity, project and model;
   - short insights, such as a long context that is being re-read on every turn.
 - **Projects tab.** Tick the projects to include. The filter applies to the Usage tab and the menu bar total, and is remembered. "only" isolates a single project.
+- **Monthly budget.** A bar above the footer, with a tick for each day of the month, tracks this month's spend against a limit you type in (whole dollars) on the right. The black marker is today's position in the month and the coloured marker is the share of the limit used so far: green while you are at or behind the day marker, red once you are ahead of it. The limit is remembered, follows the project filter, and is greyed out while it is 0.
 - **Editable prices.** Right-click the menu bar item and choose *Edit prices…*. Per model you can set input, output, cache read and 5-minute / 1-hour cache write rates, and a second set of rates for prompts over a token threshold (for models such as Haiku 5.5 that charge more for large prompts).
 - **Update from Anthropic.** The price editor can read Anthropic's [pricing page](https://platform.claude.com/docs/en/about-claude/pricing), show what differs from your table, and apply only the changes you tick.
 - **Command-line report.** `claudit-report --days 7 --top 20` prints the same breakdown in a terminal.
@@ -51,6 +52,7 @@ Run the tests with `swift test`. You can also open `Package.swift` in Xcode.
 | --- | --- |
 | Price table | `~/Library/Application Support/Claudit/price-table.json` |
 | Project filter | the app's user defaults |
+| Monthly limit | the app's user defaults |
 
 If the price file can't be read, Claudit falls back to the built-in defaults without overwriting it, so you can repair it by hand.
 
