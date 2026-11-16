@@ -38,6 +38,8 @@ final class UsageStore: ObservableObject {
     @Published var period: Period = .today
     @Published var tab: Tab = .usage
     @Published var isLoading = true
+    /// Set when the transcript scan failed or was blocked, so the popover can say why it is empty.
+    @Published private(set) var scanError: String?
     /// The editable price table, loaded from (and saved to) the app's own storage.
     @Published private(set) var priceTable: PriceTable
 
@@ -171,6 +173,8 @@ final class UsageStore: ObservableObject {
         pendingReprice = false
         queue.async { [transcripts] in
             let changed = transcripts.refresh(since: scanStart.addingTimeInterval(-86_400))
+            let error = transcripts.lastError
+            DispatchQueue.main.async { self.scanError = error }
             guard changed || first || rolledOver || reprice else { return }
 
             let (prompts, unpriced) = Aggregator.prompts(from: transcripts.sessions, prices: prices)

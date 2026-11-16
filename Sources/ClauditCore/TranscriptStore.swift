@@ -6,7 +6,18 @@ public final class TranscriptStore {
     public let root: URL
     private var files: [String: SessionFileState] = [:]
 
-    public init(root: URL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/projects")) {
+    /// Why the last scan could not read transcripts, or nil if it went fine.
+    public private(set) var lastError: String?
+
+    /// Claude Code keeps transcripts under $CLAUDE_CONFIG_DIR/projects when that is set, else ~/.claude/projects.
+    public static var defaultRoot: URL {
+        if let dir = ProcessInfo.processInfo.environment["CLAUDE_CONFIG_DIR"], !dir.isEmpty {
+            return URL(fileURLWithPath: (dir as NSString).expandingTildeInPath).appendingPathComponent("projects")
+        }
+        return FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/projects")
+    }
+
+    public init(root: URL = TranscriptStore.defaultRoot) {
         self.root = root
     }
 
@@ -17,9 +28,26 @@ public final class TranscriptStore {
     @discardableResult
     public func refresh(since: Date) -> Bool {
         let fm = FileManager.default
+        lastError = nil
+        var isDir: ObjCBool = false
+        guard fm.fileExists(atPath: root.path, isDirectory: &isDir), isDir.boolValue else {
+            lastError = "No transcript folder at \(root.path). Claude Code may store its data elsewhere on this Mac, or access to the folder is blocked."
+            return false
+        }
+        var firstFailure: String?
         guard let en = fm.enumerator(at: root,
                                      includingPropertiesForKeys: [.contentModificationDateKey, .fileSizeKey, .isRegularFileKey],
-                                     options: [.skipsHiddenFiles]) else { return false }
+                                     options: [.skipsHiddenFiles],
+                                     errorHandler: { url, error in
+                                         if firstFailure == nil { firstFailure = "\(url.path): \(error.localizedDescription)" }
+                                         return true
+                                     }) else {
+            lastError = "Could not read \(root.path). Check that Claudit is allowed to access it."
+            return false
+        }
+        defer {
+            if let firstFailure { lastError = "Some transcripts could not be read (\(firstFailure)). Access may be blocked by macOS privacy settings or a device policy." }
+        }
         var changed = false
         for case let url as URL in en where url.pathExtension == "jsonl" {
             guard let v = try? url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey, .isRegularFileKey]),
@@ -34,6 +62,10 @@ public final class TranscriptStore {
             } else {
                 guard let mtime = v.contentModificationDate, mtime >= since, size > 0 else { continue }
                 guard let state = makeState(for: url) else { continue }
+                do { try FileHandle(forReadingFrom: url).close() } catch {
+                    if firstFailure == nil { firstFailure = "\(path): \(error.localizedDescription)" }
+                    continue
+                }
                 files[path] = state
                 if state.readNew() { changed = true }
             }

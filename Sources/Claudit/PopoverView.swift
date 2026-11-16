@@ -61,6 +61,9 @@ struct UsagePopover: View {
         VStack(alignment: .leading, spacing: 10) {
             topBar
             Divider()
+            if let error = store.scanError {
+                scanErrorBanner(error)
+            }
             if store.today == nil {
                 Spacer()
                 HStack { Spacer(); ProgressView("Reading transcripts…"); Spacer() }
@@ -75,6 +78,19 @@ struct UsagePopover: View {
         .padding(14)
         .frame(width: 410, height: 580)
         .onHover(perform: onHover)
+    }
+
+    private func scanErrorBanner(_ message: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Couldn't read transcripts").font(.callout.weight(.semibold))
+                Text(message).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
     }
 
     @ViewBuilder
