@@ -36,7 +36,7 @@ struct BudgetBar: View {
                         }
                 }
                 .font(.caption)
-                .help("Monthly target")
+                .help("Monthly limit")
             }
             .frame(height: 22)
             if b.status != .off {
